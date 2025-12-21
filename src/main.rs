@@ -6,10 +6,8 @@ fn main() {
     print!("$ ");
     io::stdout().flush().unwrap();
 
-    let _ = io::stdin().read_line(&mut input);
+    io::stdin().read_line(&mut input).unwrap();
 
-    print!("{}: Command not found", input);
-
-    io::stdout().flush().unwrap();
+    print!("{}: command not found", input.trim());
 
 }
