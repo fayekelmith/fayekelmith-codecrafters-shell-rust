@@ -1,6 +1,10 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
 
+
+pub mod commands;
+
+
 fn main() {
     loop {
         
@@ -17,6 +21,13 @@ fn main() {
                 }
                 "echo" => {
                     println!("{}", remainder);
+                }
+                "type" => {
+                    if let Some(_) = commands::BuiltInCommands::from_str(remainder.trim()){
+                        println!("{} is a shell builtin", remainder.trim());
+                    }else{
+                        println!("{}: not found", remainder.trim());
+                    }
                 }
                 _ => {
                      println!("{}: command not found", input.trim());
