@@ -2,7 +2,8 @@
 pub enum BuiltInCommands{
     Exit,
     Echo,
-    Type
+    Type,
+    Pwd,
 }
 
 impl BuiltInCommands{
@@ -11,6 +12,7 @@ impl BuiltInCommands{
             "exit" => Some(BuiltInCommands::Exit),
             "echo" => Some(BuiltInCommands::Echo),
             "type" => Some(BuiltInCommands::Type),
+            "pwd" => Some(BuiltInCommands::Pwd),
             _ => None,
         }
     }
