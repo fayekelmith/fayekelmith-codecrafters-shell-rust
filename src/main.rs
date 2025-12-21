@@ -3,6 +3,7 @@ use std::io::{self, Write};
 
 
 pub mod commands;
+pub mod execution;
 
 
 fn main() {
@@ -26,7 +27,11 @@ fn main() {
                     if let Some(_) = commands::BuiltInCommands::from_str(remainder.trim()){
                         println!("{} is a shell builtin", remainder.trim());
                     }else{
-                        println!("{}: not found", remainder.trim());
+                        if execution::find_executable_files(remainder.trim()){
+                            //works
+                        }else{
+                            println!("{}: not found", remainder.trim());
+                        }
                     }
                 }
                 _ => {
