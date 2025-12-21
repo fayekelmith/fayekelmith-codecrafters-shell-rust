@@ -53,6 +53,10 @@ fn main() {
                 "exit" => {
                     break;
                 }
+                "pwd" => {
+                    let path = std::env::current_dir().unwrap();
+                    println!("{}", path.display());
+                }
                 _ => {
                      println!("{}: command not found", input.trim());
                 }
