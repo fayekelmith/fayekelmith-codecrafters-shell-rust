@@ -4,13 +4,21 @@ use std::io::{self, Write};
 fn main() {
 
     loop {
-    let mut input : String = String::new();
-    print!("$ ");
-    io::stdout().flush().unwrap();
+        
+        let mut input : String = String::new();
+        print!("$ ");
+        io::stdout().flush().unwrap();
 
-    io::stdin().read_line(&mut input).unwrap();
+        io::stdin().read_line(&mut input).unwrap();
 
-    println!("{}: command not found", input.trim());
+        match input.trim(){
+            "exit" => {
+                break;
+            }
+            _ => {
+                 println!("{}: command not found", input.trim());
+            }
+        }
 
     }
 
