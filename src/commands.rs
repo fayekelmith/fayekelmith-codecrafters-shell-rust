@@ -4,6 +4,7 @@ pub enum BuiltInCommands{
     Echo,
     Type,
     Pwd,
+    Cd,
 }
 
 impl BuiltInCommands{
@@ -13,6 +14,7 @@ impl BuiltInCommands{
             "echo" => Some(BuiltInCommands::Echo),
             "type" => Some(BuiltInCommands::Type),
             "pwd" => Some(BuiltInCommands::Pwd),
+            "cd" => Some(BuiltInCommands::Cd),
             _ => None,
         }
     }

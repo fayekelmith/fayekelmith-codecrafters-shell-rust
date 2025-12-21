@@ -1,7 +1,5 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
-use std::process::Command;
-
 
 pub mod commands;
 pub mod execution;
@@ -36,13 +34,17 @@ fn main() {
                         }
                     }
                 }
+                "cd" => {
+                    match execution::change_directory(remainder){
+                        Ok(_) => {},
+                        Err(e) => {
+                            println!("cd: {}", e);
+                        }
+                    }
+                }
                 _ => {
                     if execution::is_executable_cmd(first_word).0{
-                        let output = Command::new(first_word)
-                            .args(remainder.split_whitespace())
-                            .output()
-                            .expect("Failed to execute command");
-                        io::stdout().write_all(&output.stdout).unwrap();
+                        let _ = execution::execute_cmd(first_word, remainder.split_whitespace().collect());
                     }else{
                         println!("{}: command not found", input.trim());
                     }
@@ -56,6 +58,14 @@ fn main() {
                 "pwd" => {
                     let path = std::env::current_dir().unwrap();
                     println!("{}", path.display());
+                }
+                "cd" => {
+                    match execution::change_directory("") {
+                        Ok(_) => {},
+                        Err(e) => {
+                            println!("cd: {}", e);
+                        }
+                    }
                 }
                 _ => {
                      println!("{}: command not found", input.trim());
