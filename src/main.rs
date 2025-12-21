@@ -1,5 +1,6 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
+use std::process::Command;
 
 
 pub mod commands;
@@ -26,16 +27,25 @@ fn main() {
                 "type" => {
                     if let Some(_) = commands::BuiltInCommands::from_str(remainder.trim()){
                         println!("{} is a shell builtin", remainder.trim());
-                    }else{
-                        if execution::find_executable_files(remainder.trim()){
-                            //works
+                    }
+                    else{
+                        if execution::is_executable_cmd(remainder.trim()).0{
+                            println!("{} is {}", remainder.trim(), execution::is_executable_cmd(remainder.trim()).1);
                         }else{
                             println!("{}: not found", remainder.trim());
                         }
                     }
                 }
                 _ => {
-                     println!("{}: command not found", input.trim());
+                    if execution::is_executable_cmd(first_word).0{
+                        let output = Command::new(first_word)
+                            .args(remainder.split_whitespace())
+                            .output()
+                            .expect("Failed to execute command");
+                        io::stdout().write_all(&output.stdout).unwrap();
+                    }else{
+                        println!("{}: command not found", input.trim());
+                    }
                 }
             }
         }else{

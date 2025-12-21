@@ -1,6 +1,6 @@
 use std::path::Path;
 use is_executable::is_executable;
-pub fn find_executable_files(command: &str) -> bool{
+pub fn is_executable_cmd(command: &str) -> (bool, String) {
 
         let paths = std::env::var("PATH").unwrap_or_default();
         let path_dirs : Vec<&str> = paths.split(':').collect();
@@ -10,12 +10,10 @@ pub fn find_executable_files(command: &str) -> bool{
             if Path::new(&full_path).exists() && Path::new(&full_path).is_file(){
 
                 if is_executable(&full_path){
-                    println!("{} is {}",command, full_path);
-                    return true
+                    return (true, full_path);
                 }
             }
         }
 
-        return false
-
+        return (false, String::new());
 }
