@@ -34,14 +34,9 @@ fn main() {
                         }
                     }
                 }
-                "cd" => {
-                    match execution::change_directory(remainder){
-                        Ok(_) => {},
-                        Err(e) => {
-                            println!("cd: {}", e);
-                        }
-                    }
-                }
+                "cd" => if let Err(e) = execution::change_directory(remainder.trim()) {
+                    println!("cd: {}", e);
+                },
                 _ => {
                     if execution::is_executable_cmd(first_word).0{
                         let _ = execution::execute_cmd(first_word, remainder.split_whitespace().collect());
@@ -59,14 +54,9 @@ fn main() {
                     let path = std::env::current_dir().unwrap();
                     println!("{}", path.display());
                 }
-                "cd" => {
-                    match execution::change_directory("") {
-                        Ok(_) => {},
-                        Err(e) => {
-                            println!("cd: {}", e);
-                        }
-                    }
-                }
+                "cd" => if let Err(e) = execution::change_directory("") {
+                    println!("cd: {}", e);
+                },
                 _ => {
                      println!("{}: command not found", input.trim());
                 }

@@ -2,8 +2,7 @@ use std::path::Path;
 use is_executable::is_executable;
 use std::io::Write;
 use std::process::Command;
-use std::fs;
-
+use anyhow::{Result, Context};
 
 
 pub fn is_executable_cmd(command: &str) -> (bool, String) {
@@ -24,7 +23,7 @@ pub fn is_executable_cmd(command: &str) -> (bool, String) {
         return (false, String::new());
 }
 
-pub fn execute_cmd(cmd: &str, args: Vec<&str>)-> Result<(), std::io::Error>{
+pub fn execute_cmd(cmd: &str, args: Vec<&str>)-> Result<()>{
     let output = Command::new(cmd)
         .args(args)
         .output()?;
@@ -33,18 +32,15 @@ pub fn execute_cmd(cmd: &str, args: Vec<&str>)-> Result<(), std::io::Error>{
     Ok(())
 }
 
-pub fn change_directory(command: &str) -> Result<(), std::io::Error>{
-    let current_dir = std::env::current_dir()?;
+pub fn change_directory(command: &str) -> Result<()>{
     if command.trim() == "" || command.trim() == "~"{
         if let Some(home_dir)  = std::env::home_dir(){
-            std::env::set_current_dir(home_dir)?;
-        } else {
-            std::env::set_current_dir(current_dir)?;
+            std::env::set_current_dir(home_dir).context("No such file or directory")?
         }
     } else{
-        let path = fs::canonicalize(command.trim())?;
-        std::env::set_current_dir(path)?
+        if let Err(_) = std::env::set_current_dir(command.trim()) {
+            return Err(anyhow::anyhow!("{}: No such file or directory", command.trim()));
+        }
     }
-
     Ok(())
 }
