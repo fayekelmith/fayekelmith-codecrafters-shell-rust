@@ -54,8 +54,7 @@ pub fn change_directory(command: &str) -> Result<()>{
 pub fn process_echo_str(input: &str) -> String{
     let mut result: String = String::new();
     let mut state = QuoteStateMachine::Normal;
-
-
+    let mut was_last_char_space = false;
 
     for ch in input.chars(){
         if ch == '\''{
@@ -70,6 +69,18 @@ pub fn process_echo_str(input: &str) -> String{
                 QuoteStateMachine::InDoubleQuote => state = QuoteStateMachine::Normal,
                 QuoteStateMachine::InSingleQuote => result.push(ch),
                 QuoteStateMachine::Normal => state = QuoteStateMachine::InDoubleQuote,
+            }
+        }else if ch.is_whitespace(){
+            match state{
+                QuoteStateMachine::Normal => {
+                    if !was_last_char_space{
+                        result.push(' ');
+                        was_last_char_space = true;
+                    }
+                },
+                _ => {
+                    result.push(ch);
+                }
             }
         }
         else{
