@@ -1,8 +1,6 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
 
-use crate::execution::process_echo_str;
-
 pub mod commands;
 pub mod execution;
 
@@ -24,7 +22,7 @@ fn main() {
         let command = &parts[0];
         let args = &parts[1..];
 
-        match command {
+        match command.as_str() {
                 "exit" => {
                     break;
                 }
@@ -42,7 +40,7 @@ fn main() {
                         println!("{} is a shell builtin", target);
                     }
                     else if let (true, path) = execution::is_executable_cmd(target){
-                        println!("{} is {}", target, path.display());
+                        println!("{} is {}", target, path);
                     }
                     else{
                         println!("{}: not found", target);
@@ -56,15 +54,14 @@ fn main() {
                 },
                 _ => {
                     let (exists, _) = execution::is_executable_cmd(command);
-                    if exists{
-                        let arg_refs: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
-                        let _ = execution::execute_cmd(command, args_refs);
-                    }else{
-                        println!("{}: command not found", input.trim());
-                    }
+                if exists {
+                    let args_refs: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
+                    let _ = execution::execute_cmd(command, args_refs);
+                } else {
+                    println!("{}: command not found", command);
+                }
                 }
         }
-
     }
 
 }
