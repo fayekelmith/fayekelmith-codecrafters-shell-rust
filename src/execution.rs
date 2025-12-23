@@ -37,6 +37,7 @@ pub fn execute_cmd(cmd: &str, args: Vec<&str>)-> Result<()>{
         (">", false, 1),
         ("1>", false, 1),
         (">>", true, 1),
+        ("1>>", true, 1),
         ("2>>", true, 2),
         ("2>", false, 2),
     ];
