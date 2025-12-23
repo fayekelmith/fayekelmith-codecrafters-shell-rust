@@ -78,7 +78,7 @@ pub fn process_echo_str(input: &str) -> Vec<String>{
                     if !current_token.is_empty() && matches!(state, QuoteStateMachine::Normal){
                         args.push(current_token.clone());
                         current_token.clear();
-                    }else if !matches!(state, QuoteStateMachine::Normal) && !current_token.is_empty(){
+                    }else if !matches!(state, QuoteStateMachine::Normal){
                         current_token.push(ch);
                     }
             },

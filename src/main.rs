@@ -10,59 +10,59 @@ pub mod execution;
 fn main() {
     loop {
         
-        let mut input: String = String::new();
         print!("$ ");
         io::stdout().flush().unwrap();
-
+        
+        let mut input: String = String::new();
         io::stdin().read_line(&mut input).unwrap();
 
-        if let Some((first_word, remainder)) = input.trim().split_once(char::is_whitespace){
-            match first_word {
+        let input = input.trim();
+        if input.is_empty() { continue; }
+
+
+        let parts = execution::process_echo_str(input);
+        let command = &parts[0];
+        let args = &parts[1..];
+
+        match command {
                 "exit" => {
                     break;
                 }
                 "echo" => {
-                    println!("{}", process_echo_str(remainder).join(" "));
-                }
+                    println!("{}", args.join(" "));
+                },
+                "pwd" => {
+                    let path = std::env::current_dir().unwrap();
+                    println!("{}", path.display());
+                },
                 "type" => {
-                    if let Some(_) = commands::BuiltInCommands::from_str(remainder.trim()){
-                        println!("{} is a shell builtin", remainder.trim());
+                    let target = args[0].as_str();
+                    
+                    if let Some(_) = commands::BuiltInCommands::from_str(target){
+                        println!("{} is a shell builtin", target);
+                    }
+                    else if let (true, path) = execution::is_executable_cmd(target){
+                        println!("{} is {}", target, path.display());
                     }
                     else{
-                        if execution::is_executable_cmd(remainder.trim()).0{
-                            println!("{} is {}", remainder.trim(), execution::is_executable_cmd(remainder.trim()).1);
-                        }else{
-                            println!("{}: not found", remainder.trim());
-                        }
+                        println!("{}: not found", target);
                     }
                 }
-                "cd" => if let Err(e) = execution::change_directory(remainder.trim()) {
-                    println!("cd: {}", e);
+                "cd" => {
+                    let path = args.get(0).map_or("", |s| s.as_str());
+                    if let Err(e) = execution::change_directory(path){ 
+                        println!("cd: {}", e);
+                    }
                 },
                 _ => {
-                    if execution::is_executable_cmd(first_word).0{
-                        let _ = execution::execute_cmd(first_word, remainder.split_whitespace().collect());
+                    let (exists, _) = execution::is_executable_cmd(command);
+                    if exists{
+                        let arg_refs: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
+                        let _ = execution::execute_cmd(command, args_refs);
                     }else{
                         println!("{}: command not found", input.trim());
                     }
                 }
-            }
-        }else{
-            match input.trim() {
-                "exit" => {
-                    break;
-                }
-                "pwd" => {
-                    let path = std::env::current_dir().unwrap();
-                    println!("{}", path.display());
-                }
-                "cd" => if let Err(e) = execution::change_directory("") {
-                    println!("cd: {}", e);
-                },
-                _ => {
-                     println!("{}: command not found", input.trim());
-                }
-            }
         }
 
     }
