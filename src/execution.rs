@@ -4,6 +4,12 @@ use std::io::Write;
 use std::process::Command;
 use anyhow::{Result, Context};
 
+enum QuoteStateMachine{
+    Normal,
+    InSingleQuote,
+    InDoubleQuote,
+}
+
 
 pub fn is_executable_cmd(command: &str) -> (bool, String) {
 
@@ -43,4 +49,34 @@ pub fn change_directory(command: &str) -> Result<()>{
         }
     }
     Ok(())
+}
+
+pub fn process_echo_str(input: &str) -> String{
+    let mut result: String = String::new();
+    let mut state = QuoteStateMachine::Normal;
+
+
+
+    for ch in input.chars(){
+        if ch == '\''{
+            match state {
+                QuoteStateMachine::Normal => state = QuoteStateMachine::InSingleQuote,
+                QuoteStateMachine::InSingleQuote => state = QuoteStateMachine::Normal,
+                QuoteStateMachine::InDoubleQuote => result.push(ch),
+            }
+        }
+        else if ch == '\"'{
+            match state{
+                QuoteStateMachine::InDoubleQuote => state = QuoteStateMachine::Normal,
+                QuoteStateMachine::InSingleQuote => result.push(ch),
+                QuoteStateMachine::Normal => state = QuoteStateMachine::InDoubleQuote,
+            }
+        }
+        else{
+            result.push(ch);
+        }
+
+    }
+
+    result
 }

@@ -1,6 +1,8 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
 
+use crate::execution::process_echo_str;
+
 pub mod commands;
 pub mod execution;
 
@@ -20,7 +22,7 @@ fn main() {
                     break;
                 }
                 "echo" => {
-                    println!("{}", remainder);
+                    println!("{}", process_echo_str(remainder.trim()));
                 }
                 "type" => {
                     if let Some(_) = commands::BuiltInCommands::from_str(remainder.trim()){
