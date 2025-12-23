@@ -51,7 +51,7 @@ pub fn change_directory(command: &str) -> Result<()>{
     Ok(())
 }
 
-pub fn process_echo_str(input: &str) -> Vec<String>{
+pub fn process_str(input: &str) -> Vec<String>{
 
     let mut args: Vec<String> = Vec::new();
     let mut current_token: String = String::new();
@@ -59,33 +59,46 @@ pub fn process_echo_str(input: &str) -> Vec<String>{
     let mut state = QuoteStateMachine::Normal;
 
     while let Some(ch) = chars.next(){
-        match ch {
-            '\'' => {
-                match state {
-                    QuoteStateMachine::Normal => state = QuoteStateMachine::InSingleQuote,
-                    QuoteStateMachine::InSingleQuote => state = QuoteStateMachine::Normal,
-                    QuoteStateMachine::InDoubleQuote => current_token.push(ch),
+        match state {
+            QuoteStateMachine::Normal => {
+                match ch {
+                    '\'' => state = QuoteStateMachine::InSingleQuote,
+                    '"' => state = QuoteStateMachine::InDoubleQuote,
+                    ' ' | '\t' => {
+                        if !current_token.is_empty(){
+                            args.push(current_token.clone());
+                            current_token.clear();
+                        }
+                    },
+                    '\\' => {
+                        if let Some(next_ch) = chars.next(){
+                            current_token.push(next_ch);
+                        }
+                    },
+                    _ => current_token.push(ch),
+                }
+            }, 
+            QuoteStateMachine::InSingleQuote => {
+                match ch {
+                    '\'' => state = QuoteStateMachine::Normal,
+                    _ => current_token.push(ch),
                 }
             },
-            '"' => {
-                match state {
-                    QuoteStateMachine::Normal => state = QuoteStateMachine::InDoubleQuote,
-                    QuoteStateMachine::InDoubleQuote => state = QuoteStateMachine::Normal,
-                    QuoteStateMachine::InSingleQuote => current_token.push(ch),
+            QuoteStateMachine::InDoubleQuote => {
+                match ch {
+                    '"' => state = QuoteStateMachine::Normal,
+                    '\\' => {
+                        match chars.peek(){
+                            Some(&c) if c == '"' || c == '\\' || c == '$' || c == '`' => {
+                                chars.next();
+                                current_token.push(c);
+                            },
+                            _ => current_token.push('\\'),
+                        }
+                    },
+                    _ => current_token.push(ch),
                 }
             },
-            ' ' | '\t' => {
-                    if !current_token.is_empty() && matches!(state, QuoteStateMachine::Normal){
-                        args.push(current_token.clone());
-                        current_token.clear();
-                    }else if !matches!(state, QuoteStateMachine::Normal){
-                        current_token.push(ch);
-                    }
-            },
-            _ => {
-                current_token.push(ch);
-            }
-            
         }
     }
     if !current_token.is_empty(){

@@ -18,7 +18,7 @@ fn main() {
         if input.is_empty() { continue; }
 
 
-        let parts = execution::process_echo_str(input);
+        let parts = execution::process_str(input);
         let command = &parts[0];
         let args = &parts[1..];
 
