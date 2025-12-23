@@ -80,13 +80,14 @@ pub fn process_echo_str(input: &str) -> String{
                 },
                 _ => {
                     result.push(ch);
+                    was_last_char_space = false;
                 }
             }
         }
         else{
             result.push(ch);
+            was_last_char_space = false;
         }
-
     }
 
     result
