@@ -26,9 +26,9 @@ fn main() {
                 "exit" => {
                     break;
                 }
-                "echo" => {
-                    println!("{}", args.join(" "));
-                },
+                // "echo" => {
+                //     println!("{}", args.join(" "));
+                // },
                 "pwd" => {
                     let path = std::env::current_dir().unwrap();
                     println!("{}", path.display());

@@ -3,6 +3,7 @@ use is_executable::is_executable;
 use std::io::Write;
 use std::process::Command;
 use anyhow::{Result, Context};
+use std::fs::OpenOptions;
 
 enum QuoteStateMachine{
     Normal,
@@ -30,11 +31,68 @@ pub fn is_executable_cmd(command: &str) -> (bool, String) {
 }
 
 pub fn execute_cmd(cmd: &str, args: Vec<&str>)-> Result<()>{
+    // 1 = stdout, 2 = stderr to redirect
+    //(op, append, fd)
+    let operations = vec![
+        (">", false, 1),
+        ("1>", false, 1),
+        (">>", true, 1),
+        ("2>>", true, 2),
+        ("2>", false, 2),
+    ];
+    let mut clean_args =  Vec::new();
+    let mut stdout_redirect: Vec<(String, bool)> = Vec::new(); // (file_path, append)
+    let mut stderr_redirect: Vec<(String, bool)> = Vec::new(); // (file_path, append)
+    let mut i = 0;
+
+    while i < args.len(){
+        let mut matches = false;
+        let current_arg = &args[i];
+        for (op, append, fd) in &operations{
+            if args[i] == *op{
+                if let Some(file_path) = args.get(i+1){
+                    let entry = (file_path.to_string(), *append);
+                    if *fd ==1{
+                        stdout_redirect.push(entry);
+                    } else{
+                        stderr_redirect.push(entry);
+                    }
+                    i +=2;
+                    matches = true;
+                    break;
+                }
+            }
+        }
+        if !matches{
+            clean_args.push(current_arg.to_string());
+            i +=1;
+        }
+    }
+    //execution with redirections
     let output = Command::new(cmd)
-        .args(args)
+        .args(clean_args)
         .output()?;
-    std::io::stdout().write(&output.stdout).unwrap();
-    std::io::stderr().write(&output.stderr).unwrap();
+
+
+    if let Some((last_path, last_append)) = stdout_redirect.pop(){
+        for (path, append) in stdout_redirect{
+            OpenOptions::new().write(true).create(true).append(append).truncate(!append).open(path)?;
+        }
+        let mut file = OpenOptions::new().write(true).create(true).append(last_append).truncate(!last_append).open(&last_path)?;
+        file.write_all(&output.stdout)?;
+    }else{
+        std::io::stdout().write_all(&output.stdout)?;
+    }
+
+    if let Some((last_path, last_append)) = stderr_redirect.pop(){
+        for (path, append) in stderr_redirect{
+            OpenOptions::new().write(true).create(true).append(append).truncate(!append).open(path)?;
+        }
+        let mut file = OpenOptions::new().write(true).create(true).append(last_append).truncate(!last_append).open(&last_path)?;
+        file.write_all(&output.stderr)?;    
+    }else{
+        std::io::stderr().write_all(&output.stderr)?;
+    }
     Ok(())
 }
 
