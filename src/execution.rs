@@ -51,44 +51,46 @@ pub fn change_directory(command: &str) -> Result<()>{
     Ok(())
 }
 
-pub fn process_echo_str(input: &str) -> String{
-    let mut result: String = String::new();
-    let mut state = QuoteStateMachine::Normal;
-    let mut was_last_char_space = false;
+pub fn process_echo_str(input: &str) -> Vec<String>{
 
-    for ch in input.chars(){
-        if ch == '\''{
-            match state {
-                QuoteStateMachine::Normal => state = QuoteStateMachine::InSingleQuote,
-                QuoteStateMachine::InSingleQuote => state = QuoteStateMachine::Normal,
-                QuoteStateMachine::InDoubleQuote => result.push(ch),
-            }
-        }
-        else if ch == '\"'{
-            match state{
-                QuoteStateMachine::InDoubleQuote => state = QuoteStateMachine::Normal,
-                QuoteStateMachine::InSingleQuote => result.push(ch),
-                QuoteStateMachine::Normal => state = QuoteStateMachine::InDoubleQuote,
-            }
-        }else if ch.is_whitespace(){
-            match state{
-                QuoteStateMachine::Normal => {
-                    if !was_last_char_space{
-                        result.push(' ');
-                        was_last_char_space = true;
-                    }
-                },
-                _ => {
-                    result.push(ch);
-                    was_last_char_space = false;
+    let mut args: Vec<String> = Vec::new();
+    let mut current_token: String = String::new();
+    let mut chars = input.chars().peekable();
+    let mut state = QuoteStateMachine::Normal;
+
+    while let Some(ch) = chars.next(){
+        match ch {
+            '\'' => {
+                match state {
+                    QuoteStateMachine::Normal => state = QuoteStateMachine::InSingleQuote,
+                    QuoteStateMachine::InSingleQuote => state = QuoteStateMachine::Normal,
+                    QuoteStateMachine::InDoubleQuote => current_token.push(ch),
                 }
+            },
+            '"' => {
+                match state {
+                    QuoteStateMachine::Normal => state = QuoteStateMachine::InDoubleQuote,
+                    QuoteStateMachine::InDoubleQuote => state = QuoteStateMachine::Normal,
+                    QuoteStateMachine::InSingleQuote => current_token.push(ch),
+                }
+            },
+            ' ' | '\t' => {
+                    if !current_token.is_empty() && matches!(state, QuoteStateMachine::Normal){
+                        args.push(current_token.clone());
+                        current_token.clear();
+                    }else if !matches!(state, QuoteStateMachine::Normal) && !current_token.is_empty(){
+                        current_token.push(ch);
+                    }
+            },
+            _ => {
+                current_token.push(ch);
             }
-        }
-        else{
-            result.push(ch);
-            was_last_char_space = false;
+            
         }
     }
+    if !current_token.is_empty(){
+        args.push(current_token);
+    }
 
-    result
+    args
 }

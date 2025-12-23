@@ -22,7 +22,7 @@ fn main() {
                     break;
                 }
                 "echo" => {
-                    println!("{}", process_echo_str(remainder.trim()));
+                    println!("{}", process_echo_str(remainder).join(" "));
                 }
                 "type" => {
                     if let Some(_) = commands::BuiltInCommands::from_str(remainder.trim()){
