@@ -83,6 +83,9 @@ pub fn parse_str(args: Vec<String>) -> CommandResult{
 pub fn handler_output(output: Vec<u8>, redirects:&mut Vec<(String, bool)>, is_stdout: bool) -> Result<()>{
     if let Some((last_path, last_append)) = redirects.pop(){
         for (path, append) in redirects{
+            if let Some(parent) = Path::new(path).parent() {
+                std::fs::create_dir_all(parent)?;
+            }
             OpenOptions::new().write(true).create(true).append(*append).truncate(!*append).open(path)?;
         }
         let mut file = OpenOptions::new().write(true).create(true).append(last_append).truncate(!last_append).open(&last_path)?;
