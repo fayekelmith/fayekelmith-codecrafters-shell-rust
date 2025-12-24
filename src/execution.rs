@@ -88,6 +88,9 @@ pub fn handler_output(output: Vec<u8>, redirects:&mut Vec<(String, bool)>, is_st
             }
             OpenOptions::new().write(true).create(true).append(*append).truncate(!*append).open(path)?;
         }
+        if let Some(parent) = Path::new(&last_path).parent() {
+            std::fs::create_dir_all(parent)?;
+        }
         let mut file = OpenOptions::new().write(true).create(true).append(last_append).truncate(!last_append).open(&last_path)?;
         file.write_all(&output)?;
     }else{
