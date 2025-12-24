@@ -17,21 +17,27 @@ fn main() {
         let input = input.trim();
         if input.is_empty() { continue; }
 
-
+        //tokenize input
         let parts = execution::process_str(input);
-        let command = &parts[0];
-        let args = &parts[1..];
+
+        //parse input
+        let command_info = execution::parse_str(parts);
+
+        let command = &command_info.clean_args[0];
+        let args = &command_info.clean_args[1..];
 
         match command.as_str() {
                 "exit" => {
                     break;
+                }, 
+                "echo" => {
+                    let output = args.join(" ") + "\n";
+                    execution::handler_output(output.into_bytes(), &mut command_info.stdout_redirect.clone(), true).unwrap();
                 }
-                // "echo" => {
-                //     println!("{}", args.join(" "));
-                // },
                 "pwd" => {
-                    let path = std::env::current_dir().unwrap();
-                    println!("{}", path.display());
+                    let path = std::env::current_dir().unwrap().to_string_lossy().into_owned();
+                    let output = path + "\n";
+                    execution::handler_output(output.into_bytes(), &mut command_info.stdout_redirect.clone(), true).unwrap();
                 },
                 "type" => {
                     let target = args[0].as_str();
@@ -55,8 +61,9 @@ fn main() {
                 _ => {
                     let (exists, _) = execution::is_executable_cmd(command);
                 if exists {
-                    let args_refs: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
-                    let _ = execution::execute_cmd(command, args_refs);
+                    if let Err(err) = execution::execute_cmd(command, args.to_vec()){
+                        eprintln!("{}", err);
+                    }
                 } else {
                     println!("{}: command not found", command);
                 }
