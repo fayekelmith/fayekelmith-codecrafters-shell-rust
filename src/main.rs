@@ -35,11 +35,13 @@ fn main() {
                 "echo" => {
                     let output = args.join(" ") + "\n";
                     execution::handler_output(output.into_bytes(), &mut command_info.stdout_redirect.clone(), true).unwrap();
+                    execution::handler_output(vec![], &mut command_info.stderr_redirect.clone(), false).unwrap();
                 }
                 "pwd" => {
                     let path = std::env::current_dir().unwrap().to_string_lossy().into_owned();
                     let output = path + "\n";
                     execution::handler_output(output.into_bytes(), &mut command_info.stdout_redirect.clone(), true).unwrap();
+                    execution::handler_output(vec![], &mut command_info.stderr_redirect.clone(), false).unwrap();
                 },
                 "type" => {
                     let target = args[0].as_str();
