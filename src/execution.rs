@@ -108,7 +108,7 @@ pub fn handler_output(output: Vec<u8>, redirects:&mut Vec<(String, bool)>, is_st
 pub fn execute_cmd(cmd: &str, commands: CommandResult)-> Result<()>{
     let CommandResult { clean_args, mut stdout_redirect, mut stderr_redirect } = commands;
     let output = Command::new(cmd)
-        .args(clean_args)
+        .args(&clean_args[1..]) //skip index 0, which is already cmd
         .output()?;
     handler_output(output.stdout, &mut stdout_redirect, true)?;
     handler_output(output.stderr, &mut stderr_redirect, false)?;
