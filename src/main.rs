@@ -23,6 +23,8 @@ fn main() {
         //parse input
         let command_info = execution::parse_str(parts);
 
+        let commands = command_info.clone();
+
         let command = &command_info.clean_args[0];
         let args = &command_info.clean_args[1..];
 
@@ -61,7 +63,7 @@ fn main() {
                 _ => {
                     let (exists, _) = execution::is_executable_cmd(command);
                 if exists {
-                    if let Err(err) = execution::execute_cmd(command, args.to_vec()){
+                    if let Err(err) = execution::execute_cmd(command, commands){
                         eprintln!("{}", err);
                     }
                 } else {
